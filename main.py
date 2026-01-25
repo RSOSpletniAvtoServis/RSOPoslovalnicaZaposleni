@@ -177,7 +177,7 @@ def get_poslovalnice(posl: Posl):
                         rows = cursor.fetchall()
                         # Fixed columns → no need to read cursor.description
                         return [
-                            {"IDPoslovalnica": row[0], "NazivPoslovalnice": row[1], "NaslovPoslovalnice": row[2], "Telefon": row[3], "Email": row[4], "IDKraj": row[5], "Aktiven": row[6] "NazivKraja": result.get(str(row[5]))}
+                            {"IDPoslovalnica": row[0], "NazivPoslovalnice": row[1], "NaslovPoslovalnice": row[2], "Telefon": row[3], "Email": row[4], "IDKraj": row[5], "Aktiven": row[6], "NazivKraja": result.get(str(row[5]))}
                             for row in rows
                         ]
                 except Exception as e:
