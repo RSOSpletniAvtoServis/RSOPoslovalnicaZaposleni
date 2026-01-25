@@ -13,6 +13,7 @@ import os
 import requests
 
 adminbaza = os.getenv("ADMINBAZA", "RSOAdminVozila")
+SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL")
 
 def validate_identifier(name: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_]{1,64}", name):
