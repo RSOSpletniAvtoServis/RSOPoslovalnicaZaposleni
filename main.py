@@ -153,7 +153,7 @@ def get_poslovalnice(posl: Posl):
                 for row in rows
                 if row[0] is not None
                 })
-                print(vodja_ids)
+                print(kraji_ids)
                 fail = 0
                 try:
                     data = {"ids": kraji_ids, "uniqueid": posl.uniqueid}
