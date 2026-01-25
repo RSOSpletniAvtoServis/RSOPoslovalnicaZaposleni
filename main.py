@@ -45,12 +45,12 @@ app.add_middleware(
 # Zacetek Avtoservis
 
 @app.get("/avtoservis/{idtennant}")
-def get_kraj(idtennant: int):
+def get_avtoservis(idtennant: int):
     try:
         with pool.get_connection() as conn:
             with conn.cursor() as cursor:
                 query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
-                cursor.execute(query,(poslovalnica.idtennant,))
+                cursor.execute(query,(idtennant,))
                 row = cursor.fetchone()
                 if row is None:
                     raise HTTPException(status_code=404, detail="DB not found")
