@@ -425,7 +425,7 @@ def get_ponudba(ponu1: Ponu1):
                     raise HTTPException(status_code=404, detail="DB not found")
                 tennantDB = row[1]
                 
-                sql = "SELECT IDPonuja, IDPoslovalnica, IDStoritev, Aktiven FROM " + tennantDB + ".Ponuja WHERE IDPonudbe = %s"
+                sql = "SELECT IDPonudba, IDPoslovalnica, IDStoritev, Aktiven FROM " + tennantDB + ".Ponuja WHERE IDPonudbe = %s"
                 cursor.execute(sql,(ponu1.idponudba,))
 
                 row = cursor.fetchone()
