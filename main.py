@@ -317,10 +317,19 @@ def dodajPonudbo(ponudba: Ponudba):
         if row is None:
             raise HTTPException(status_code=404, detail="DB not found")
         tennantDB = row[1]
+
+        # Preverjanje ali ponudba že obstaja!
+        query = "SELECT IDPonudba, IDPoslovalnica, IDStoritev, Aktiven FROM  " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s AND IDStoritev = %s"
+        cursor.execute(query,(ponudba.idposlovalnica,ponudba.idstoritev))
+        row = cursor.fetchone()
+        if row is None:
+            query = "INSERT INTO " + tennantDB + ".Ponuja(IDPoslovalnica,IDStoritev,Aktiven) VALUES (%s,%s,%s)"
+            cursor.execute(query,(ponudba.idposlovalnica,ponudba.idstoritev,1))
+            return {"Ponudba": "passed"}
+        else:
+            return {"Ponudba": "failed", "Opis": "ponudba že obstaja"}
         
-        query = "INSERT INTO " + tennantDB + ".Ponuja(IDPoslovalnica,IDStoritev,Aktiven) VALUES (%s,%s,%s)"
-        cursor.execute(query,(ponudba.idposlovalnica,ponudba.idstoritev,1))
-        return {"Ponudba": "passed"}
+        
   
     except Exception as e:
         print("Error: ", e)
