@@ -544,6 +544,153 @@ def dodajZaposleni(zaposleni: Zaposleni):
         conn.close() 
     return {"Zaposleni": "unknown"}  
 
+
+class Zap(BaseModel):
+    idtennant: str
+    uniqueid: str
+    
+@app.post("/zaposleni/")
+def get_zaposleni(zap: Zap):
+    userid = zap.uniqueid
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # get tennant db
+                query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+                cursor.execute(query,(zap.idtennant,))
+                row = cursor.fetchone()
+                if row is None:
+                    raise HTTPException(status_code=404, detail="DB not found")
+                tennantDB = row[1]
+                
+                cursor.execute("SELECT z.IDZaposleni, z.Ime, z.Priimek, z.Telefon, z.Email, p.NaslovPoslovalnice FROM "+ tennantDB +".Zaposleni z, "+tennantDB+".Poslovalnica p WHERE z.IDPoslovalnica = p.IDPoslovalnica)
+                rows = cursor.fetchall()
+                return [
+                    {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "NazivPoslovalnice": row[5]}
+                    for row in rows
+                ]
+    except Exception as e:
+        print("DB error:", e)
+        #raise HTTPException(status_code=500, detail="Database error")
+    return {"Zaposleni": "failed"}
+    
+class Zap3(BaseModel):
+    idzaposleni: str
+    idtennant: str
+    uniqueid: str
+
+@app.post("/zaposlen/")
+def get_zaposleni(zap: Zap3):
+    userid = zap.uniqueid
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # get tennant db
+                query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+                cursor.execute(query,(zap.idtennant,))
+                row = cursor.fetchone()
+                if row is None:
+                    raise HTTPException(status_code=404, detail="DB not found")
+                tennantDB = row[1]
+                
+                cursor.execute("SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE z.IDZaposleni = %s)
+                rows = cursor.fetchone()
+                return [
+                    {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "IDPoslovalnica": row[5]}
+                    for row in rows
+                ]
+    except Exception as e:
+        print("DB error:", e)
+        #raise HTTPException(status_code=500, detail="Database error")
+    return {"Zaposleni": "failed"}
+
+
+class Zap2(BaseModel):
+    idzaposleni: str
+    idposlovalnica: str
+    idtennant: str
+    uniqueid: str
+
+@app.put("/posodobizaposleni/")
+def posodobi_zaposleni(zap: Zap2):
+    userid = zap.uniqueid
+    try:
+        conn = pool.get_connection()
+        # Create a cursor
+        cursor = conn.cursor()
+        query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+        cursor.execute(query,(zap.idtennant,))
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="DB not found")
+        tennantDB = row[1]
+        
+
+        query = "UPDATE "+tennantDB+".Zaposleni SET IDPoslovalnica = %s WHERE IDZaposleni = %s"
+        cursor.execute(query,(zap.idposlovalnica,zap.idzaposleni))
+        return {"Zaposleni": "passed"}
+  
+    except Exception as e:
+        print("Error: ", e)
+        return {"Zaposleni": "failed"}
+    finally:
+        cursor.close()
+        conn.close() 
+    return {"Zaposleni": "unknown"}
+
+
+
+class Zap1(BaseModel):
+    idzaposleni: str
+    idtennant: str
+    uniqueid: str
+
+@app.delete("/izbrisizaposlenega/")
+def izbrisi_zaposlenega(zap: Zap1):
+    userid = zap.uniqueid
+    try:
+        conn = pool.get_connection()
+        # Create a cursor
+        cursor = conn.cursor()
+        query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+        cursor.execute(query,(zap.idtennant,))
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="DB not found")
+        tennantDB = row[1]
+        
+        query = "SELECT IDZaposleni, IDUporabnik FROM  " + tennantDB + ".Zaposleni WHERE IDZaposleni = %s"
+        cursor.execute(query,(zap.idzaposleni))
+        row = cursor.fetchone()
+        iduporabnik = row[1]
+        
+        # zacetek dodajanje uporabnika 
+        try:
+            data = {"iduporabnik": iduporabnik, "uniqueid": zap.uniqueid}
+            response = requests.delete(f"{SERVICE_UPOPRI_URL}/odstraniuporabnika/", json=data, timeout=5)
+            #response.raise_for_status()  # Raise exception for HTTP errors  
+            print(response)
+            if "application/json" not in response.headers.get("Content-Type", ""):
+                return {"Zaposleni": "failed"}
+            else:
+                result = response.json()
+                print(result)
+                sql = "DELETE FROM "+tennantDB+".Zaposleni WHERE IDZaposleni = %s"
+                cursor.execute(sql,(zap.idzaposleni,))
+                return {"Zaposleni": "passed"}
+        except Exception as e:
+            print("Prislo je do napake: ", e)
+            return {"Zaposleni": "failed"}
+        # konec dodajanje uporabnika
+  
+    except Exception as e:
+        print("Error: ", e)
+        return {"Zaposleni": "failed"}
+    finally:
+        cursor.close()
+        conn.close() 
+    return {"Zaposleni": "unknown"}
+
 # Konec zaposleni
 
 
