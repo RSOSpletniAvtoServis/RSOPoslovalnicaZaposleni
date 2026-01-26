@@ -14,6 +14,7 @@ import requests
 
 adminbaza = os.getenv("ADMINBAZA", "RSOAdminVozila")
 SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL")
+SERVICE_UPOPRI_URL = os.getenv("SERVICE_UPOPRI_URL","http://upopri:8000")
 
 def validate_identifier(name: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_]{1,64}", name):
@@ -484,6 +485,66 @@ def posodobi_ponudbo(ponu: Ponudba1):
 
 
 # Konec ponudba
+
+# Zacetek zaposleni
+
+class Zaposleni(BaseModel):
+    username: str
+    password: str
+    ime: str
+    priimek: str
+    email: str
+    telefon: str
+    idposlovalnica: str
+    idtennant: str
+    uniqueid: str
+
+# konec Classi
+
+
+@app.post("/dodajzaposlenega/")
+def dodajZaposleni(zaposleni: Zaposleni):
+    userid = ponudba.uniqueid
+    try:
+        conn = pool.get_connection()
+        # Create a cursor
+        cursor = conn.cursor()
+        query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+        cursor.execute(query,(zaposleni.idtennant,))
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="DB not found")
+        tennantDB = row[1]
+        
+        # zacetek dodajanje uporabnika 
+        try:
+            data = {"username": zaposleni.username, "password": zaposleni.password, "idtennant": zaposleni.idtennant, "uniqueid": ponu.uniqueid}
+            response = requests.post(f"{SERVICE_UPOPRI_URL}/dodajzaposlenega/", json=data, timeout=5)
+            #response.raise_for_status()  # Raise exception for HTTP errors  
+            print(response)
+            if "application/json" not in response.headers.get("Content-Type", ""):
+                return {"Zaposleni": "failed"}
+            else:
+                result = response.json()
+                print(result)
+                sql = "INSERT INTO "+tennantDB+".Zaposleni(Ime,Priimek,Telefon,Email,IDPoslovalnica,IDUporabnik) VALUES (%s,%s,%s,%s,%s,%s)"
+                cursor.execute(sql,(zaposleni.ime,zaposleni.priimek,zaposleni.telefon,zaposleni.email,zaposleni.idposlovalnica,result["IDUporabnik"]))
+                
+                return {"Zaposleni": "passed"}
+        except Exception as e:
+            print("Prislo je do napake: ", e)
+            return {"Zaposleni": "failed"}
+        # konec dodajanje uporabnika
+  
+    except Exception as e:
+        print("Error: ", e)
+        return {"Zaposleni": "failed"}
+    finally:
+        cursor.close()
+        conn.close() 
+    return {"Zaposleni": "unknown"}  
+
+# Konec zaposleni
 
 
 
