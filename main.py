@@ -463,9 +463,16 @@ def posodobi_ponudbo(ponu: Ponudba1):
         
         if ponu.aktiven != '1':
             ponu.aktiven = '0'
-        query = "UPDATE "+tennantDB+".Ponuja SET IDPoslovalnica = %s, IDStoritev = %s, Aktiven = %s WHERE IDPonudba = %s"
-        cursor.execute(query,(ponu.idposlovalnica,ponu.idstoritev,ponu.aktiven,ponu.idponudba))
-        return {"Ponudba": "passed"}
+        query = "SELECT IDPonudba, IDPoslovalnica, IDStoritev, Aktiven FROM  " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s AND IDStoritev = %s LIMIT 1"
+        cursor.execute(query,(ponu.idposlovalnica,ponu.idstoritev))
+        row = cursor.fetchone()
+        print(row)
+        if row is None:
+            query = "UPDATE "+tennantDB+".Ponuja SET IDPoslovalnica = %s, IDStoritev = %s, Aktiven = %s WHERE IDPonudba = %s"
+            cursor.execute(query,(ponu.idposlovalnica,ponu.idstoritev,ponu.aktiven,ponu.idponudba))
+            return {"Ponudba": "passed"}
+        else:
+            return {"Ponudba": "failed", "Opis": "ponudba s posodobljenimi vrednostmi že obstaja!"}
   
     except Exception as e:
         print("Error: ", e)
