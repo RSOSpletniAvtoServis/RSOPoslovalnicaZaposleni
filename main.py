@@ -504,7 +504,7 @@ class Zaposleni(BaseModel):
 
 @app.post("/dodajzaposlenega/")
 def dodajZaposleni(zaposleni: Zaposleni):
-    userid = ponudba.uniqueid
+    userid = zaposleni.uniqueid
     try:
         conn = pool.get_connection()
         # Create a cursor
@@ -518,7 +518,7 @@ def dodajZaposleni(zaposleni: Zaposleni):
         
         # zacetek dodajanje uporabnika 
         try:
-            data = {"username": zaposleni.username, "password": zaposleni.password, "idtennant": zaposleni.idtennant, "uniqueid": ponu.uniqueid}
+            data = {"username": zaposleni.username, "password": zaposleni.password, "idtennant": zaposleni.idtennant, "uniqueid": zaposleni.uniqueid}
             response = requests.post(f"{SERVICE_UPOPRI_URL}/dodajzaposlenega/", json=data, timeout=5)
             #response.raise_for_status()  # Raise exception for HTTP errors  
             print(response)
