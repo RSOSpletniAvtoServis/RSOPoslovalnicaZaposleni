@@ -596,7 +596,7 @@ def get_zaposleni(zap: Zap3):
                 tennantDB = row[1]
                 sql = "SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE IDZaposleni = %s"
                 cursor.execute(sql,(zap.idzaposleni,))
-                rows = cursor.fetchone()
+                row = cursor.fetchone()
                 return {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "IDPoslovalnica": row[5]}
     except Exception as e:
         print("DB error:", e)
