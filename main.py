@@ -319,9 +319,10 @@ def dodajPonudbo(ponudba: Ponudba):
         tennantDB = row[1]
 
         # Preverjanje ali ponudba že obstaja!
-        query = "SELECT IDPonudba, IDPoslovalnica, IDStoritev, Aktiven FROM  " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s AND IDStoritev = %s"
+        query = "SELECT IDPonudba, IDPoslovalnica, IDStoritev, Aktiven FROM  " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s AND IDStoritev = %s LIMIT 1"
         cursor.execute(query,(ponudba.idposlovalnica,ponudba.idstoritev))
-        row = cursor.fetchall()
+        row = cursor.fetchone()
+        print(row)
         if row is None:
             query = "INSERT INTO " + tennantDB + ".Ponuja(IDPoslovalnica,IDStoritev,Aktiven) VALUES (%s,%s,%s)"
             cursor.execute(query,(ponudba.idposlovalnica,ponudba.idstoritev,1))
