@@ -563,7 +563,8 @@ def get_zaposleni(zap: Zap):
                     raise HTTPException(status_code=404, detail="DB not found")
                 tennantDB = row[1]
                 
-                cursor.execute("SELECT z.IDZaposleni, z.Ime, z.Priimek, z.Telefon, z.Email, p.NaslovPoslovalnice FROM "+ tennantDB +".Zaposleni z, "+tennantDB+".Poslovalnica p WHERE z.IDPoslovalnica = p.IDPoslovalnica")
+                sql = "SELECT z.IDZaposleni, z.Ime, z.Priimek, z.Telefon, z.Email, p.NaslovPoslovalnice FROM "+ tennantDB +".Zaposleni z, "+tennantDB+".Poslovalnica p WHERE z.IDPoslovalnica = p.IDPoslovalnica"
+                cursor.execute(sql)
                 rows = cursor.fetchall()
                 return [
                     {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "NazivPoslovalnice": row[5]}
@@ -592,8 +593,8 @@ def get_zaposleni(zap: Zap3):
                 if row is None:
                     raise HTTPException(status_code=404, detail="DB not found")
                 tennantDB = row[1]
-                
-                cursor.execute("SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE z.IDZaposleni = %s)
+                sql = "SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE z.IDZaposleni = %s"
+                cursor.execute(sql,(zap.idzaposleni,))
                 rows = cursor.fetchone()
                 return [
                     {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "IDPoslovalnica": row[5]}
