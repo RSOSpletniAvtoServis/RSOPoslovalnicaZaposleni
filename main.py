@@ -583,6 +583,7 @@ class Zap3(BaseModel):
 @app.post("/zaposlen/")
 def get_zaposleni(zap: Zap3):
     userid = zap.uniqueid
+    print(zap.idzaposleni)
     try:
         with pool.get_connection() as conn:
             with conn.cursor() as cursor:
@@ -596,10 +597,7 @@ def get_zaposleni(zap: Zap3):
                 sql = "SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE IDZaposleni = %s"
                 cursor.execute(sql,(zap.idzaposleni,))
                 rows = cursor.fetchone()
-                return [
-                    {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "IDPoslovalnica": row[5]}
-                    for row in rows
-                ]
+                return {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "IDPoslovalnica": row[5]}
     except Exception as e:
         print("DB error:", e)
         #raise HTTPException(status_code=500, detail="Database error")
