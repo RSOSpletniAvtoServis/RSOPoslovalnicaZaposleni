@@ -593,7 +593,7 @@ def get_zaposleni(zap: Zap3):
                 if row is None:
                     raise HTTPException(status_code=404, detail="DB not found")
                 tennantDB = row[1]
-                sql = "SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE z.IDZaposleni = %s"
+                sql = "SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE IDZaposleni = %s"
                 cursor.execute(sql,(zap.idzaposleni,))
                 rows = cursor.fetchone()
                 return [
