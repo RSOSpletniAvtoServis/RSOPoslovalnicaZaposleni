@@ -563,7 +563,7 @@ def get_zaposleni(zap: Zap):
                     raise HTTPException(status_code=404, detail="DB not found")
                 tennantDB = row[1]
                 
-                sql = "SELECT z.IDZaposleni, z.Ime, z.Priimek, z.Telefon, z.Email, p.NaslovPoslovalnice FROM "+ tennantDB +".Zaposleni z, "+tennantDB+".Poslovalnica p WHERE z.IDPoslovalnica = p.IDPoslovalnica"
+                sql = "SELECT z.IDZaposleni, z.Ime, z.Priimek, z.Telefon, z.Email, p.NazivPoslovalnice FROM "+ tennantDB +".Zaposleni z, "+tennantDB+".Poslovalnica p WHERE z.IDPoslovalnica = p.IDPoslovalnica"
                 cursor.execute(sql)
                 rows = cursor.fetchall()
                 return [
