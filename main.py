@@ -407,7 +407,7 @@ def get_ponudbe(ponu: Ponu):
     return {"Ponudba": "failed"} 
 
 class Posl1(BaseModel):
-    idposlovalnica: str
+    idponudba: str
     idtennant: str
     uniqueid: str
 
