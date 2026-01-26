@@ -242,7 +242,7 @@ def get_poslovalnica(posl1: Posl1):
     return {"Poslovalnica": "undefined"}
 
 @app.put("/posodobiposlovalnico/")
-def posodobi_kraj(posl: Poslovalnica1):
+def posodobi_poslovalnico(posl: Poslovalnica1):
     userid = posl.uniqueid
     try:
         conn = pool.get_connection()
@@ -254,8 +254,8 @@ def posodobi_kraj(posl: Poslovalnica1):
         if row is None:
             raise HTTPException(status_code=404, detail="DB not found")
         tennantDB = row[1]
-        if posl.aktiven != 1:
-            posl.aktiven = 0
+        if posl.aktiven != '1':
+            posl.aktiven = '0'
         query = "UPDATE "+tennantDB+".Poslovalnica SET NazivPoslovalnice = %s, NaslovPoslovalnice = %s, Telefon = %s, Email = %s, IDKraj = %s, Aktiven = %s WHERE IDPoslovalnica = %s"
         cursor.execute(query,(posl.naziv,posl.naslov,posl.telefon,posl.email,posl.idkraj,posl.aktiven,posl.idposlovalnica))
         return {"Poslovalnica": "passed"}
