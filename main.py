@@ -370,35 +370,35 @@ def get_ponudbe(ponu: Ponu):
                     #response.raise_for_status()  # Raise exception for HTTP errors  
                     print(response)
                     if "application/json" not in response.headers.get("Content-Type", ""):
-                        sql = "SELECT pp.IDPoslovalnica, pp.IDStoritev, p.NazivPoslovalnice, pp.Aktiven FROM " + tennantDB + ".Ponuja pp, " + tennantDB + ".Poslovalnica p WHERE p.IDPoslovalnica = pp.IDPoslovalnica"
+                        sql = "SELECT pp.IDPonudba, pp.IDPoslovalnica, pp.IDStoritev, p.NazivPoslovalnice, pp.Aktiven FROM " + tennantDB + ".Ponuja pp, " + tennantDB + ".Poslovalnica p WHERE p.IDPoslovalnica = pp.IDPoslovalnica"
                         cursor.execute()
                         rows = cursor.fetchall()
                         # Fixed columns → no need to read cursor.description
                         return [
-                            {"IDPoslovalnica": row[0], "IDStoritev": row[1], "NazivPoslovalnice": row[2], "Aktiven": row[3], "NazivStoritve": None}
+                            {"IDPonudba": row[0], "IDPoslovalnica": row[1], "IDStoritev": row[2], "NazivPoslovalnice": row[3], "Aktiven": row[4], "NazivStoritve": None}
                             for row in rows
                         ]
                     else:
                         result = response.json()
                         print(result)
-                        sql = "SELECT pp.IDPoslovalnica, pp.IDStoritev, p.NazivPoslovalnice, pp.Aktiven FROM " + tennantDB + ".Ponuja pp, " + tennantDB + ".Poslovalnica p WHERE p.IDPoslovalnica = pp.IDPoslovalnica"
+                        sql = "SELECT pp.IDPonudba, pp.IDPoslovalnica, pp.IDStoritev, p.NazivPoslovalnice, pp.Aktiven FROM " + tennantDB + ".Ponuja pp, " + tennantDB + ".Poslovalnica p WHERE p.IDPoslovalnica = pp.IDPoslovalnica"
                         cursor.execute(sql)
                         rows = cursor.fetchall()
                         # Fixed columns → no need to read cursor.description
                         return [
-                            {"IDPoslovalnica": row[0], "IDStoritev": row[1], "NazivPoslovalnice": row[2], "Aktiven": row[3], "NazivStoritve": result.get(str(row[1]))}
+                            {"IDPonudba": row[0], "IDPoslovalnica": row[1], "IDStoritev": row[2], "NazivPoslovalnice": row[3], "Aktiven": row[4], "NazivStoritve": result.get(str(row[2]))}
                             for row in rows
                         ]
                 except Exception as e:
                     print("Prislo je do napake: ", e)
                     fail = 1
                 if fail == 1:
-                    sql = "SELECT pp.IDPoslovalnica, pp.IDStoritev, p.NazivPoslovalnice, pp.Aktiven FROM " + tennantDB + ".Ponuja pp, " + tennantDB + ".Poslovalnica p WHERE p.IDPoslovalnica = pp.IDPoslovalnica"
+                    sql = "SELECT pp.IDPonudba, pp.IDPoslovalnica, pp.IDStoritev, p.NazivPoslovalnice, pp.Aktiven FROM " + tennantDB + ".Ponuja pp, " + tennantDB + ".Poslovalnica p WHERE p.IDPoslovalnica = pp.IDPoslovalnica"
                     cursor.execute(sql)
                     rows = cursor.fetchall()
                     # Fixed columns → no need to read cursor.description
                     return [
-                        {"IDPoslovalnica": row[0], "IDStoritev": row[1], "NazivPoslovalnice": row[2], "Aktiven": row[3], "NazivStoritve": None}
+                        {"IDPonudba": row[0], "IDPoslovalnica": row[1], "IDStoritev": row[2], "NazivPoslovalnice": row[3], "Aktiven": row[4], "NazivStoritve": None}
                         for row in rows
                     ]
     except Exception as e:
@@ -434,7 +434,7 @@ def get_ponudba(ponu1: Ponu1):
                     raise HTTPException(status_code=404, detail="Kraj not found")
 
                 return {
-                    "IDPoslovalnica": row[0],
+                    "IDPonudba": row[0],
                     "IDPoslovalnica": row[1],
                     "IDStoritev": row[2],
                     "Aktiven": row[3]
