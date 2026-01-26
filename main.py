@@ -659,7 +659,7 @@ def izbrisi_zaposlenega(zap: Zap1):
         tennantDB = row[1]
         
         query = "SELECT IDZaposleni, IDUporabnik FROM  " + tennantDB + ".Zaposleni WHERE IDZaposleni = %s"
-        cursor.execute(query,(zap.idzaposleni))
+        cursor.execute(query,(zap.idzaposleni,))
         row = cursor.fetchone()
         iduporabnik = row[1]
         
