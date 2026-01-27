@@ -11,6 +11,7 @@ import re
 import httpx
 import os
 import requests
+from typing import List
 
 adminbaza = os.getenv("ADMINBAZA", "RSOAdminVozila")
 SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL")
