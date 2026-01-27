@@ -443,35 +443,35 @@ def get_ponudbe(ponu: Ponu2):
                     #response.raise_for_status()  # Raise exception for HTTP errors  
                     print(response)
                     if "application/json" not in response.headers.get("Content-Type", ""):
-                        sql = "SELECT IDStoritev FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
+                        sql = "SELECT IDStoritev, IDPonudba FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
                         cursor.execute(sql,(ponu.idposlovalnica,))
                         rows = cursor.fetchall()
                         # Fixed columns → no need to read cursor.description
                         return [
-                            {"IDStoritev": row[0], "NazivStoritve": row[0]}
+                            {"IDPonudba": row[1], "IDStoritev": row[0], "NazivStoritve": row[0]}
                             for row in rows
                         ]
                     else:
                         result = response.json()
                         print(result)
-                        sql = "SELECT IDStoritev FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
+                        sql = "SELECT IDStoritev, IDPonudba FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
                         cursor.execute(sql,(ponu.idposlovalnica,))
                         rows = cursor.fetchall()
                         # Fixed columns → no need to read cursor.description
                         return [
-                            {"IDStoritev": row[0], "NazivStoritve": result.get(str(row[0]))}
+                            {"IDPonudba": row[1], "IDStoritev": row[0], "NazivStoritve": result.get(str(row[0]))}
                             for row in rows
                         ]
                 except Exception as e:
                     print("Prislo je do napake: ", e)
                     fail = 1
                 if fail == 1:
-                    sql = "SELECT IDStoritev FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
+                    sql = "SELECT IDStoritev, IDPonudba FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
                     cursor.execute(sql,(ponu.idposlovalnica,))
                     rows = cursor.fetchall()
                     # Fixed columns → no need to read cursor.description
                     return [
-                        {"IDStoritev": row[0], "NazivStoritve": row[0]}
+                        {"IDPonudba": row[1], "IDStoritev": row[0], "NazivStoritve": row[0]}
                         for row in rows
                     ]
     except Exception as e:
