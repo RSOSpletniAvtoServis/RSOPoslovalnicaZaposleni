@@ -151,7 +151,7 @@ def get_poslovalnice(posl: Posl):
                 if row is None:
                     raise HTTPException(status_code=404, detail="DB not found")
                 tennantDB = row[1]
-                
+
                 cursor.execute("SELECT IDKraj FROM "+ tennantDB +".Poslovalnica")
                 rows = cursor.fetchall()
                 kraji_ids = list({
@@ -406,6 +406,82 @@ def get_ponudbe(ponu: Ponu):
         print("DB error:", e)
         #raise HTTPException(status_code=500, detail="Database error")
     return {"Ponudba": "failed"} 
+
+# Zacetek poslovalniške ponudbe 
+
+class Ponu2(BaseModel):
+    idposlovalnica: str
+    idtennant: str
+    uniqueid: str
+
+@app.post("/ponudbeposlovalnice/")
+def get_ponudbe(ponu: Ponu2):
+    userid = ponu.uniqueid
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # get tennant db
+                query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+                cursor.execute(query,(ponu.idtennant,))
+                row = cursor.fetchone()
+                if row is None:
+                    raise HTTPException(status_code=404, detail="DB not found")
+                tennantDB = row[1]
+                sql = "SELECT IDStoritev FROM "+ tennantDB +".Ponuja WHERE IDPoslovalnica = %s"
+                cursor.execute(sql,(ponu.idposlovalnica,))
+                rows = cursor.fetchall()
+                storitve_ids = list({
+                row[0]
+                for row in rows
+                if row[0] is not None
+                })
+                print(storitve_ids)
+                fail = 0
+                try:
+                    data = {"ids": storitve_ids, "uniqueid": ponu.uniqueid}
+                    response = requests.post(f"{SERVICE_ADMVOZ_URL}/izbranestoritve/", json=data, timeout=5)
+                    #response.raise_for_status()  # Raise exception for HTTP errors  
+                    print(response)
+                    if "application/json" not in response.headers.get("Content-Type", ""):
+                        sql = "SELECT IDStoritev FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
+                        cursor.execute(sql,(ponu.idposlovalnica,))
+                        rows = cursor.fetchall()
+                        # Fixed columns → no need to read cursor.description
+                        return [
+                            {"IDStoritev": row[0], "NazivStoritve": row[0]}
+                            for row in rows
+                        ]
+                    else:
+                        result = response.json()
+                        print(result)
+                        sql = "SELECT IDStoritev FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
+                        cursor.execute(sql,(ponu.idposlovalnica,))
+                        rows = cursor.fetchall()
+                        # Fixed columns → no need to read cursor.description
+                        return [
+                            {"IDStoritev": row[0], "NazivStoritve": result.get(str(row[0]))}
+                            for row in rows
+                        ]
+                except Exception as e:
+                    print("Prislo je do napake: ", e)
+                    fail = 1
+                if fail == 1:
+                    sql = "SELECT IDStoritev FROM " + tennantDB + ".Ponuja WHERE IDPoslovalnica = %s"
+                    cursor.execute(sql,(ponu.idposlovalnica,))
+                    rows = cursor.fetchall()
+                    # Fixed columns → no need to read cursor.description
+                    return [
+                        {"IDStoritev": row[0], "NazivStoritve": row[0]}
+                        for row in rows
+                    ]
+    except Exception as e:
+        print("DB error:", e)
+        #raise HTTPException(status_code=500, detail="Database error")
+    return {"Ponudba": "failed"}
+
+
+# Konec poslovalniške ponudbe
+
 
 class Posl1(BaseModel):
     idponudba: str
