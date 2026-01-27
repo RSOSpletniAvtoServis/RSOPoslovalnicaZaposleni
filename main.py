@@ -766,9 +766,46 @@ def izbrisi_zaposlenega(zap: Zap1):
         conn.close() 
     return {"Zaposleni": "unknown"}
 
-# Konec zaposleni
+# Konec zaposleni                
+                
+class Pos2(BaseModel):
+    idpos: List[str]
+    idtennant: str
+    uniqueid: str
 
+@app.post("/izbraneposlovalnice/")
+def get_izbraneposlovalnice(pos2: Pos2):
+    print(pos2.idpos)     # list[int]
+    print(pos2.uniqueid)  # str
+    ids_string = "("
+    idmiddle = ",".join(str(i) for i in pos2.idpos)
+    full_string = "('" + idmiddle + "')"
+    print(ids_string)
+    print(idmiddle)
+    print(full_string)
+    
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+                cursor.execute(query,(pos2.idtennant,))
+                row = cursor.fetchone()
+                if row is None:
+                    raise HTTPException(status_code=404, detail="DB not found")
+                tennantDB = row[1]
+                
+                sql = "SELECT IDPoslovalnica, NazivPoslovalnice FROM "+tennantDB+".Poslovalnica WHERE IDPoslovalnica IN " + full_string
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                # Fixed columns → no need to read cursor.description
+                columns = [desc[0] for desc in cursor.description]
+                return { row[0]: dict(zip(columns, row)) for row in rows}
 
+    except Exception as e:
+        print("DB error:", e)
+        raise HTTPException(status_code=500, detail="Database error")
+        return {"Poslovalnica": "failed"} 
+    return {"Poslovalnica": "failed"}
 
 
     
