@@ -780,7 +780,7 @@ def get_izbraneposlovalnice(pos2: Pos2):
     print(pos2.uniqueid)  # str
     ids_string = "("
     idmiddle = ",".join(str(i) for i in pos2.idpos)
-    full_string = "('" + idmiddle + "')"
+    full_string = "(" + idmiddle + ")"
     print(ids_string)
     print(idmiddle)
     print(full_string)
