@@ -770,7 +770,7 @@ def izbrisi_zaposlenega(zap: Zap1):
 # Konec zaposleni                
                 
 class Pos2(BaseModel):
-    idpos: List[str]
+    idpos: List[int]
     idtennant: str
     uniqueid: str
 
