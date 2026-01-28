@@ -810,6 +810,34 @@ def get_izbraneposlovalnice(pos2: Pos2):
         raise HTTPException(status_code=500, detail="Database error")
         return {"Poslovalnica": "failed"} 
     return {"Poslovalnica": "failed"}
-
-
     
+    
+    
+    
+class Zap55(BaseModel):
+    iduporabnik: str
+    idtennant: str
+    uniqueid: str
+
+@app.post("/zaposlen1/")
+def get_zaposleni1(zap: Zap55):
+    userid = zap.uniqueid
+    print(zap.iduporabnik)
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # get tennant db
+                query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+                cursor.execute(query,(zap.idtennant,))
+                row = cursor.fetchone()
+                if row is None:
+                    raise HTTPException(status_code=404, detail="DB not found")
+                tennantDB = row[1]
+                sql = "SELECT IDZaposleni, Ime, Priimek, Telefon, Email, IDPoslovalnica FROM "+ tennantDB +".Zaposleni WHERE IDUporabnik = %s"
+                cursor.execute(sql,(zap.iduporabnik,))
+                row = cursor.fetchone()
+                return {"IDZaposleni": row[0], "Ime": row[1], "Priimek": row[2], "Telefon": row[3], "Email": row[4], "IDPoslovalnica": row[5]}
+    except Exception as e:
+        print("DB error:", e)
+        #raise HTTPException(status_code=500, detail="Database error")
+    return {"Zaposleni": "failed"}
