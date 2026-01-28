@@ -416,7 +416,7 @@ class Ponu2(BaseModel):
     uniqueid: str
 
 @app.post("/ponudbeposlovalnice/")
-def get_ponudbe(ponu: Ponu2):
+def get_ponudbeposlovalnice(ponu: Ponu2):
     userid = ponu.uniqueid
     try:
         with pool.get_connection() as conn:
@@ -484,10 +484,7 @@ def get_ponudbe(ponu: Ponu2):
 # Konec poslovalniške ponudbe
 
 
-class Posl1(BaseModel):
-    idponudba: str
-    idtennant: str
-    uniqueid: str
+
 
 @app.post("/ponudba/")
 def get_ponudba(ponu1: Ponu1):
@@ -658,7 +655,7 @@ class Zap3(BaseModel):
     uniqueid: str
 
 @app.post("/zaposlen/")
-def get_zaposleni(zap: Zap3):
+def get_zaposlen(zap: Zap3):
     userid = zap.uniqueid
     print(zap.idzaposleni)
     try:
