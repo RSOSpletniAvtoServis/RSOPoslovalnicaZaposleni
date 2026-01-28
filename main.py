@@ -738,7 +738,7 @@ def izbrisi_zaposlenega(zap: Zap1):
         query = "SELECT IDZaposleni, IDUporabnik FROM  " + tennantDB + ".Zaposleni WHERE IDZaposleni = %s"
         cursor.execute(query,(zap.idzaposleni,))
         row = cursor.fetchone()
-        iduporabnik = row[1]
+        iduporabnik = str(row[1])
         
         # zacetek dodajanje uporabnika 
         try:
