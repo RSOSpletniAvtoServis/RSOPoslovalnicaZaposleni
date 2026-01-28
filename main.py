@@ -751,9 +751,12 @@ def izbrisi_zaposlenega(zap: Zap1):
             else:
                 result = response.json()
                 print(result)
-                sql = "DELETE FROM "+tennantDB+".Zaposleni WHERE IDZaposleni = %s"
-                cursor.execute(sql,(zap.idzaposleni,))
-                return {"Zaposleni": "passed"}
+                if result["Uporabnik"] == "passed":
+                    sql = "DELETE FROM "+tennantDB+".Zaposleni WHERE IDZaposleni = %s"
+                    cursor.execute(sql,(zap.idzaposleni,))
+                    return {"Zaposleni": "passed"}
+                else:
+                    return {"Zaposleni": "failed"}
         except Exception as e:
             print("Prislo je do napake: ", e)
             return {"Zaposleni": "failed"}
