@@ -838,3 +838,9 @@ def get_zaposleni1(zap: Zap55):
         print("DB error:", e)
         #raise HTTPException(status_code=500, detail="Database error")
     return {"Zaposleni": "failed"}
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
