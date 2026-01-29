@@ -839,8 +839,19 @@ def get_zaposleni1(zap: Zap55):
         #raise HTTPException(status_code=500, detail="Database error")
     return {"Zaposleni": "failed"}
 
+# za health checks
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+    
+    
+@app.get("/health/live")
+def live():
+    return {"status": "alive"}
+
+@app.get("/health/ready")
+def ready():
+    return {"status": "ready"}
 
 
