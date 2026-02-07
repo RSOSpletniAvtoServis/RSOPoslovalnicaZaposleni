@@ -31,7 +31,7 @@ try:
         host="127.0.0.1",                       #34.44.150.229",
         user="zan",
         password=">tnitm&+NqgoA=q6",
-        database="RSOPoslovalnicaZaposleni",
+        database="RSOAdminVozila",
         autocommit=True
     )
 except Exception as e:
@@ -48,6 +48,27 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"Mikrostoritev": "PoslovalnicaZaposleni"}
+
+
+@app.get("/kraji/")
+def get_kraji():
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT IDKraj, NazivKraja, Longitude, Latitude FROM Kraj"
+                )
+
+                cols = [c[0] for c in cursor.description]
+                rows = cursor.fetchall()   # ⬅️ important
+
+        return [dict(zip(cols, row)) for row in rows]
+
+    except Exception as e:
+        print("DB error:", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    return {"Kraji": "failed"}  
+
 
 # Zacetek Avtoservis
 
