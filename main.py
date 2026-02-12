@@ -44,7 +44,7 @@ for i in range(5):
         print(f"DB connection failed, retrying... ({i+1}/5)")
         time.sleep(5) 
 else:
-    #raise RuntimeError("Could not connect to the database after 5 attempts")
+    raise RuntimeError("Could not connect to the database after 5 attempts")
     db_healthy = False
     
 app.add_middleware(
