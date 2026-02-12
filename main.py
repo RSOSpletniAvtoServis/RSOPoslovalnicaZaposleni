@@ -38,6 +38,7 @@ for i in range(5):
             database="RSOAdminVozila",
             autocommit=True
         )
+        break
     except Exception as e:
         print("Error: ",e)
         print(f"DB connection failed, retrying... ({i+1}/5)")
