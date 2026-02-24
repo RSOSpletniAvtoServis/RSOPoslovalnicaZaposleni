@@ -14,9 +14,15 @@ import requests
 import time
 from typing import List
 
+import grpc
+
+import admvozgrpc_pb2
+import admvozgrpc_pb2_grpc
+
 adminbaza = os.getenv("ADMINBAZA", "RSOAdminVozila")
-SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL")
+SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL","http://admvoz:8000")
 SERVICE_UPOPRI_URL = os.getenv("SERVICE_UPOPRI_URL","http://upopri:8000")
+SERVICE_ADMVOZ_GRPC_URL = os.getenv("SERVICE_ADMVOZ_GRPC_URL","admvozgrpc:50051")
 
 def validate_identifier(name: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_]{1,64}", name):
@@ -170,8 +176,8 @@ def dodajPoslovalnico(poslovalnica: Poslovalnica):
     return {"Poslovalnica": "unknown"}    
     
     
-@app.post("/poslovalnice/")
-def get_poslovalnice(posl: Posl):
+@app.post("/poslovalniceold/")
+def get_poslovalniceold(posl: Posl):
     userid = posl.uniqueid
     try:
         with pool.get_connection() as conn:
@@ -234,6 +240,78 @@ def get_poslovalnice(posl: Posl):
         print("DB error:", e)
         #raise HTTPException(status_code=500, detail="Database error")
     return {"Poslovalnica": "failed"} 
+
+# izbraniKraji gRPC
+
+@app.post("/poslovalnice/")
+def get_poslovalnice(posl: Posl):
+    userid = posl.uniqueid
+    try:
+        with pool.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # get tennant db
+                query = "SELECT IDTennant, TennantDBPoslovalnice FROM  " + adminbaza + ".TennantLookup WHERE IDTennant = %s"
+                cursor.execute(query,(posl.idtennant,))
+                row = cursor.fetchone()
+                if row is None:
+                    raise HTTPException(status_code=404, detail="DB not found")
+                tennantDB = row[1]
+
+                cursor.execute("SELECT IDKraj FROM "+ tennantDB +".Poslovalnica")
+                rows = cursor.fetchall()
+                kraji_ids = list({
+                row[0]
+                for row in rows
+                if row[0] is not None
+                })
+                print(kraji_ids)
+                fail = 0
+                try:
+                    print("Zacetek gRPC:")
+                    with grpc.insecure_channel("localhost:50051") as channel:
+                        stub = admvozgrpc_pb2_grpc.AdminServiceStub(channel)
+
+                        kraji_response = stub.IzbraniKraji(
+                            admvozgrpc_pb2.GetIzbraniKrajiRequest(
+                                ids=kraji_ids,
+                                uniqueid="123"
+                            )
+                        )
+                        kraji_dict = {
+                            kraj.IDKraj: kraj.NazivKraja
+                            for kraj in kraji_response.kraji
+                        }
+                        print("\nKraji:")
+                        for kraj in kraji_response.kraji:
+                            print(kraj.IDKraj, kraj.NazivKraja)
+                        print("hej hoj gRPC dela!")
+                        sql = "SELECT IDPoslovalnica, NazivPoslovalnice, NaslovPoslovalnice, Telefon, Email, IDKraj, Aktiven FROM " + tennantDB + ".Poslovalnica"
+                        cursor.execute(sql)
+                        rows = cursor.fetchall()
+                        # Fixed columns → no need to read cursor.description
+                        return [
+                            {"IDPoslovalnica": row[0], "NazivPoslovalnice": row[1], "NaslovPoslovalnice": row[2], "Telefon": row[3], "Email": row[4], "IDKraj": row[5], "Aktiven": row[6], "NazivKraja": kraji_dict[row[5]]}
+                            for row in rows
+                        ]
+                except Exception as e:
+                    print("Prislo je do napake: ", e)
+                    fail = 1
+                if fail == 1:
+                    sql = "SELECT IDPoslovalnica, NazivPoslovalnice, NaslovPoslovalnice, Telefon, Email, IDKraj, Aktiven FROM " + tennantDB + ".Poslovalnica"
+                    cursor.execute(sql)
+                    rows = cursor.fetchall()
+                    # Fixed columns → no need to read cursor.description
+                    return [
+                        {"IDPoslovalnica": row[0], "NazivPoslovalnice": row[1], "NaslovPoslovalnice": row[2], "Telefon": row[3], "Email": row[4], "IDKraj": row[5], "Aktiven": row[6], "NazivKraja": None}
+                        for row in rows
+                    ]
+    except Exception as e:
+        print("DB error:", e)
+        #raise HTTPException(status_code=500, detail="Database error")
+    return {"Poslovalnica": "failed"} 
+
+# end izbraniKraji gRPC
+
 
 class Posl1(BaseModel):
     idposlovalnica: str
