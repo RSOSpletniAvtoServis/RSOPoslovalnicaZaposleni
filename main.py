@@ -268,7 +268,7 @@ def get_poslovalnice(posl: Posl):
                 fail = 0
                 try:
                     print("Zacetek gRPC:")
-                    with grpc.insecure_channel("localhost:50051") as channel:
+                    with grpc.insecure_channel(SERVICE_ADMVOZ_GRPC_URL) as channel:
                         stub = admvozgrpc_pb2_grpc.AdminServiceStub(channel)
 
                         kraji_response = stub.IzbraniKraji(
