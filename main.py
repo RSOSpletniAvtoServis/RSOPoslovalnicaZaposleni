@@ -21,8 +21,10 @@ import admvozgrpc_pb2_grpc
 
 adminbaza = os.getenv("ADMINBAZA", "RSOAdminVozila")
 DB_URL = os.getenv("DB_URL","127.0.0.1")
-SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL","http://admvoz:8000/admvoz")
-SERVICE_UPOPRI_URL = os.getenv("SERVICE_UPOPRI_URL","http://upopri:8000/upopri")
+SERVICE_ADMVOZ_URL = os.getenv("SERVICE_ADMVOZ_URL","http://admvoz:8000")
+SERVICE_UPOPRI_URL = os.getenv("SERVICE_UPOPRI_URL","http://upopri:8000")
+print("Path: "+SERVICE_UPOPRI_URL)
+print("Path: "+SERVICE_ADMVOZ_URL)
 SERVICE_ADMVOZ_GRPC_URL = os.getenv("SERVICE_ADMVOZ_GRPC_URL","admvozgrpc:50051")
 
 def validate_identifier(name: str) -> str:
